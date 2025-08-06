@@ -841,7 +841,8 @@ function exportTotalizedCSV() {
         return;
     }
 
-    let csvContent = "data:text/csv;charset=utf-8,Categoría,Producto,UofM,Qty,UofM2,Qty2,UofM3,Qty3\n";
+    // Encabezados del CSV solicitados
+    let csvContent = "data:text/csv;charset=utf-8,StorageLocation,Item,UofM,Qty,UofM2,Qty2,UofM3,Qty3\n";
     
     const sortedItems = Object.values(totalInventory).sort((a, b) => {
         const categoryA = a.category.toLowerCase();
@@ -863,6 +864,7 @@ function exportTotalizedCSV() {
             `"${data.uofms.Qty3 || ''}"`
         ];
         
+        // La fila ahora usa los nombres de encabezado correctos del objeto
         let row = `"${data.category}","${data.item}",${uofms[0]},${quantities[0]},${uofms[1]},${quantities[1]},${uofms[2]},${quantities[2]}\n`;
         
         csvContent += row;
