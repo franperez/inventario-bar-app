@@ -5,7 +5,9 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Inventario de Bar</title>
     <link rel="stylesheet" href="style.css">
+    <!-- Enlace al manifiesto de la PWA -->
     <link rel="manifest" href="manifest.json">
+    <!-- Colores para la barra de estado en algunos navegadores móviles -->
     <meta name="theme-color" content="#3498db">
 </head>
 <body>
@@ -20,7 +22,8 @@
                     <input type="text" id="search-input-location1" placeholder="Buscar producto..." oninput="filterAndDisplayForm('location1')">
                 </div>
                 <div id="form-location1" class="inventory-form">
-                    </div>
+                    <!-- Los campos del formulario se generarán aquí con JavaScript -->
+                </div>
             </div>
             <div class="form-actions">
                 <button onclick="loadInventory('location1')">Cargar Locación 1</button>
@@ -35,7 +38,8 @@
                     <input type="text" id="search-input-location2" placeholder="Buscar producto..." oninput="filterAndDisplayForm('location2')">
                 </div>
                 <div id="form-location2" class="inventory-form">
-                    </div>
+                    <!-- Los campos del formulario se generarán aquí con JavaScript -->
+                </div>
             </div>
             <div class="form-actions">
                 <button onclick="loadInventory('location2')">Cargar Locación 2</button>
@@ -51,7 +55,8 @@
                 <input type="text" id="search-input-totalization" placeholder="Buscar en totalización..." oninput="filterTotalizedItems()">
             </div>
             <div id="totalization-results" class="results-table">
-                </div>
+                <!-- La tabla de totalización se mostrará aquí -->
+            </div>
         </div>
     </div>
 
