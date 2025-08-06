@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Inventario de Bar</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#3498db">
+</head>
+<body>
+    <div class="container">
+        <h1>Inventario de Bar - Conteo por Locación</h1>
+
+        <div class="location-section">
+            <h2 class="collapsible-header">Locación 1: Bar Principal</h2>
+            <div id="form-section-location1" class="collapsible-content">
+                <div class="controls">
+                    <select id="category-select-location1" onchange="filterAndDisplayForm('location1')"></select>
+                    <input type="text" id="search-input-location1" placeholder="Buscar producto..." oninput="filterAndDisplayForm('location1')">
+                </div>
+                <div id="form-location1" class="inventory-form">
+                    </div>
+            </div>
+            <div class="form-actions">
+                <button onclick="loadInventory('location1')">Cargar Locación 1</button>
+            </div>
+        </div>
+
+        <div class="location-section">
+            <h2 class="collapsible-header">Locación 2: Almacén</h2>
+            <div id="form-section-location2" class="collapsible-content">
+                <div class="controls">
+                    <select id="category-select-location2" onchange="filterAndDisplayForm('location2')"></select>
+                    <input type="text" id="search-input-location2" placeholder="Buscar producto..." oninput="filterAndDisplayForm('location2')">
+                </div>
+                <div id="form-location2" class="inventory-form">
+                    </div>
+            </div>
+            <div class="form-actions">
+                <button onclick="loadInventory('location2')">Cargar Locación 2</button>
+            </div>
+        </div>
+
+        <div class="summary-section">
+            <h2>Totalización del Inventario</h2>
+            <div class="totalization-controls">
+                <button onclick="totalizeInventory()">Totalizar Inventario</button>
+                <button onclick="exportTotalizedCSV()">Exportar CSV Totalizado</button>
+                <button onclick="clearLocalStorage()">Limpiar Datos de Inventario</button>
+                <input type="text" id="search-input-totalization" placeholder="Buscar en totalización..." oninput="filterTotalizedItems()">
+            </div>
+            <div id="totalization-results" class="results-table">
+                </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html>
