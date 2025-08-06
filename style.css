@@ -1,23 +1,228 @@
 body {
-    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
-    background-color: #f8f9fa;
+    font-family: 'Inter', sans-serif;
+    background-color: #f4f7f6;
+    margin: 0;
+    padding: 20px;
+    color: #333;
+    line-height: 1.6;
 }
 
-.navbar-brand {
-    font-weight: 600;
+.container {
+    max-width: 900px;
+    margin: 0 auto;
+    background-color: #ffffff;
+    padding: 25px;
+    border-radius: 12px;
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
 }
 
-.accordion-button {
-    font-weight: 500;
-    font-size: 1.1em;
+h1 {
+    text-align: center;
+    color: #2c3e50;
+    margin-bottom: 30px;
+    font-size: 1.8em;
+    border-bottom: 2px solid #e0e0e0;
+    padding-bottom: 15px;
 }
 
-.form-control:focus {
-    border-color: #0d6efd;
-    box-shadow: 0 0 0 0.25rem rgba(13, 110, 253, 0.25);
+h2 {
+    color: #34495e;
+    margin-top: 30px;
+    margin-bottom: 15px;
+    font-size: 1.4em;
+    padding-left: 10px;
+    border-left: 4px solid #3498db;
 }
 
-.card {
+.collapsible-header {
+    cursor: pointer;
+}
+
+.collapsible-content {
+    display: none;
+    overflow: hidden;
+    padding: 0 10px;
+    transition: max-height 0.2s ease-out, padding 0.2s ease-out;
+}
+
+.location-section, .summary-section {
+    background-color: #ecf0f1;
+    padding: 20px;
+    border-radius: 10px;
+    margin-bottom: 25px;
+    box-shadow: inset 0 2px 5px rgba(0, 0, 0, 0.05);
+}
+
+.totalization-controls {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-bottom: 20px;
+    align-items: center;
+    justify-content: center; /* Centra los elementos horizontalmente */
+}
+
+/* Estilos para los campos de control (select e input de búsqueda) */
+.controls select,
+.controls input[type="text"] {
+    flex: 1; /* Permite que crezcan */
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 8px; /* Bordes más redondeados */
+    font-size: 1em;
+    box-sizing: border-box;
+    min-width: 150px;
+    box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.08); /* Sutil sombra interior */
+}
+
+/* Estilo específico para el campo de búsqueda de totalización */
+.totalization-controls input[type="text"] {
+    flex: 1; /* Permite que crezca */
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 8px; /* Bordes más redondeados */
+    font-size: 1em;
+    box-sizing: border-box;
+    min-width: 200px; /* Un poco más ancho por defecto */
+    max-width: 300px; /* Ancho máximo para que no sea demasiado largo en pantallas grandes */
+    box-shadow: inset 0 1px 3px rgba(0, 0, 0, 0.08); /* Sutil sombra interior */
+}
+
+
+.controls select:focus,
+.controls input[type="text"]:focus,
+.totalization-controls input[type="text"]:focus {
+    border-color: #3498db;
+    outline: none;
+    box-shadow: 0 0 5px rgba(52, 152, 219, 0.5);
+}
+
+
+.inventory-form {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+    gap: 15px;
+    margin-top: 20px;
+}
+
+.form-group {
+    background-color: #ffffff;
+    padding: 15px;
+    border-radius: 8px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.form-group label {
+    font-weight: bold;
+    color: #555;
+    font-size: 0.95em;
+}
+
+.form-group input[type="number"] {
+    width: calc(100% - 20px);
+    padding: 10px;
+    border: 1px solid #ccc;
+    border-radius: 5px;
+    font-size: 1em;
+    box-sizing: border-box;
+}
+
+.form-group input[type="number"]:focus {
+    border-color: #3498db;
+    outline: none;
+    box-shadow: 0 0 5px rgba(52, 152, 219, 0.5);
+}
+
+.form-actions {
+    text-align: center;
+    margin-top: 20px;
+}
+
+button {
+    background-color: #3498db;
+    color: white;
+    padding: 12px 25px;
     border: none;
-    border-radius: 0.75rem;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 1em;
+    font-weight: bold;
+    transition: background-color 0.3s ease, transform 0.2s ease;
+    margin: 5px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+button:hover {
+    background-color: #2980b9;
+    transform: translateY(-2px);
+}
+
+button:active {
+    background-color: #21618c;
+    transform: translateY(0);
+}
+
+.results-table {
+    margin-top: 20px;
+    overflow-x: auto;
+}
+
+.results-table table {
+    width: 100%;
+    border-collapse: collapse;
+    background-color: #ffffff;
+    border-radius: 8px;
+    overflow: hidden;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+}
+
+.results-table th, .results-table td {
+    border: 1px solid #ddd;
+    padding: 12px 15px;
+    text-align: left;
+    font-size: 0.9em;
+}
+
+.results-table th {
+    background-color: #3498db;
+    color: white;
+    font-weight: bold;
+    text-transform: uppercase;
+}
+
+.results-table tr:nth-child(even) {
+    background-color: #f9f9f9;
+}
+
+.results-table tr:hover {
+    background-color: #f1f1f1;
+}
+
+@media (max-width: 768px) {
+    .inventory-form {
+        grid-template-columns: 1fr;
+    }
+    .container {
+        padding: 15px;
+    }
+    h1 {
+        font-size: 1.5em;
+    }
+    h2 {
+        font-size: 1.2em;
+    }
+    button {
+        padding: 10px 20px;
+        font-size: 0.9em;
+    }
+    .controls, .totalization-controls {
+        flex-direction: column;
+        align-items: stretch; /* Estira los elementos para ocupar el ancho completo */
+    }
+    .totalization-controls input[type="text"] {
+        max-width: 100%; /* Asegura que no exceda el ancho en móviles */
+    }
 }
