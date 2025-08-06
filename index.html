@@ -3,63 +3,89 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Inventario de Bar</title>
+    <title>Inventario Totalizado Pro</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
     <link rel="stylesheet" href="style.css">
-    <!-- Enlace al manifiesto de la PWA -->
-    <link rel="manifest" href="manifest.json">
-    <!-- Colores para la barra de estado en algunos navegadores móviles -->
-    <meta name="theme-color" content="#3498db">
 </head>
 <body>
-    <div class="container">
-        <h1>Inventario de Bar - Conteo por Locación</h1>
 
-        <div class="location-section">
-            <h2 class="collapsible-header">Locación 1: Bar Principal</h2>
-            <div id="form-section-location1" class="collapsible-content">
-                <div class="controls">
-                    <select id="category-select-location1" onchange="filterAndDisplayForm('location1')"></select>
-                    <input type="text" id="search-input-location1" placeholder="Buscar producto..." oninput="filterAndDisplayForm('location1')">
+<div class="container my-5">
+    <div class="card shadow-lg border-0 rounded-4">
+        <div class="card-body p-4 p-md-5">
+            <h1 class="text-center mb-4 display-6 fw-bold text-primary">Totalizador de Inventario</h1>
+            
+            <ul class="nav nav-pills nav-justified mb-4" id="pills-tab" role="tablist">
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link active" id="pills-loc1-tab" data-bs-toggle="pill" data-bs-target="#pills-loc1" type="button" role="tab" aria-controls="pills-loc1" aria-selected="true">Ubicación 1</button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="pills-loc2-tab" data-bs-toggle="pill" data-bs-target="#pills-loc2" type="button" role="tab" aria-controls="pills-loc2" aria-selected="false">Ubicación 2</button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="pills-total-tab" data-bs-toggle="pill" data-bs-target="#pills-total" type="button" role="tab" aria-controls="pills-total" aria-selected="false">Totalización</button>
+                </li>
+            </ul>
+            
+            <div class="tab-content" id="pills-tabContent">
+                <div class="tab-pane fade show active" id="pills-loc1" role="tabpanel" aria-labelledby="pills-loc1-tab" tabindex="0">
+                    <div class="row g-3 mb-4">
+                        <div class="col-md-6">
+                            <label for="category-select-location1" class="form-label">Seleccionar Categoría:</label>
+                            <select id="category-select-location1" class="form-select form-select-lg" onchange="filterAndDisplayForm('location1')"></select>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="search-input-location1" class="form-label">Buscar Producto:</label>
+                            <div class="input-group input-group-lg">
+                                <span class="input-group-text"><i class="bi bi-search"></i></span>
+                                <input type="text" id="search-input-location1" class="form-control" placeholder="Escribe para buscar..." oninput="filterAndDisplayForm('location1')">
+                            </div>
+                        </div>
+                    </div>
+                    <div id="form-location1" class="list-group">
+                        </div>
                 </div>
-                <div id="form-location1" class="inventory-form">
-                    <!-- Los campos del formulario se generarán aquí con JavaScript -->
-                </div>
-            </div>
-            <div class="form-actions">
-                <button onclick="loadInventory('location1')">Cargar Locación 1</button>
-            </div>
-        </div>
 
-        <div class="location-section">
-            <h2 class="collapsible-header">Locación 2: Almacén</h2>
-            <div id="form-section-location2" class="collapsible-content">
-                <div class="controls">
-                    <select id="category-select-location2" onchange="filterAndDisplayForm('location2')"></select>
-                    <input type="text" id="search-input-location2" placeholder="Buscar producto..." oninput="filterAndDisplayForm('location2')">
+                <div class="tab-pane fade" id="pills-loc2" role="tabpanel" aria-labelledby="pills-loc2-tab" tabindex="0">
+                    <div class="row g-3 mb-4">
+                        <div class="col-md-6">
+                            <label for="category-select-location2" class="form-label">Seleccionar Categoría:</label>
+                            <select id="category-select-location2" class="form-select form-select-lg" onchange="filterAndDisplayForm('location2')"></select>
+                        </div>
+                        <div class="col-md-6">
+                            <label for="search-input-location2" class="form-label">Buscar Producto:</label>
+                            <div class="input-group input-group-lg">
+                                <span class="input-group-text"><i class="bi bi-search"></i></span>
+                                <input type="text" id="search-input-location2" class="form-control" placeholder="Escribe para buscar..." oninput="filterAndDisplayForm('location2')">
+                            </div>
+                        </div>
+                    </div>
+                    <div id="form-location2" class="list-group">
+                        </div>
                 </div>
-                <div id="form-location2" class="inventory-form">
-                    <!-- Los campos del formulario se generarán aquí con JavaScript -->
-                </div>
-            </div>
-            <div class="form-actions">
-                <button onclick="loadInventory('location2')">Cargar Locación 2</button>
-            </div>
-        </div>
 
-        <div class="summary-section">
-            <h2>Totalización del Inventario</h2>
-            <div class="totalization-controls">
-                <button onclick="totalizeInventory()">Totalizar Inventario</button>
-                <button onclick="exportTotalizedCSV()">Exportar CSV Totalizado</button>
-                <button onclick="clearLocalStorage()">Limpiar Datos de Inventario</button>
-                <input type="text" id="search-input-totalization" placeholder="Buscar en totalización..." oninput="filterTotalizedItems()">
-            </div>
-            <div id="totalization-results" class="results-table">
-                <!-- La tabla de totalización se mostrará aquí -->
+                <div class="tab-pane fade" id="pills-total" role="tabpanel" aria-labelledby="pills-total-tab" tabindex="0">
+                    <div class="d-flex flex-column flex-md-row justify-content-between align-items-center mb-4">
+                        <div class="input-group input-group-lg mb-3 mb-md-0 me-md-3 flex-grow-1">
+                            <span class="input-group-text"><i class="bi bi-search"></i></span>
+                            <input type="text" id="search-input-totalization" class="form-control" oninput="filterAndDisplayTotalTable()" placeholder="Buscar por categoría o producto...">
+                        </div>
+                        <div class="d-flex flex-wrap gap-2">
+                            <button class="btn btn-primary btn-lg" onclick="totalizeInventory()"><i class="bi bi-calculator me-2"></i>Totalizar</button>
+                            <button class="btn btn-success btn-lg" onclick="exportTotalizedCSV()"><i class="bi bi-file-earmark-spreadsheet me-2"></i>Exportar CSV</button>
+                            <button class="btn btn-danger btn-lg" onclick="clearLocalStorage()"><i class="bi bi-trash me-2"></i>Borrar Todo</button>
+                        </div>
+                    </div>
+                    <div id="totalization-results" class="table-responsive">
+                        </div>
+                </div>
             </div>
         </div>
     </div>
+</div>
 
-    <script src="script.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/js/bootstrap.bundle.min.js"></script>
+<script src="script.js"></script>
+
 </body>
 </html>
