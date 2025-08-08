@@ -578,7 +578,6 @@ SPARK WINE Taco Shop,CHAMP/SPARK Moet Imperial Brut,Bottle (750 ML),0,Bottle (18
 `;
 
 
-
 document.addEventListener('DOMContentLoaded', () => {
     // Procesa el CSV y lo guarda en una variable global
     window.inventoryItems = processCSV(CSV_DATA);
@@ -593,6 +592,10 @@ document.addEventListener('DOMContentLoaded', () => {
     // Inicializa la primera pestaña
     document.getElementById('category-select-location1').value = categories[0];
     filterAndDisplayForm('location1');
+
+    // Inicializa Sortable.js en los contenedores de formulario
+    initializeSortable('location1');
+    initializeSortable('location2');
 });
 
 function processCSV(csvString) {
@@ -624,8 +627,10 @@ function populateCategorySelect(selectElement, categories) {
 }
 
 function createFormGroup(item, location) {
+    const uniqueKey = `${item.StorageLocation}__${item.Item}`;
     const formGroup = document.createElement('div');
     formGroup.className = 'list-group-item';
+    formGroup.dataset.uniqueKey = uniqueKey; // Añadimos la clave única para poder guardar el orden
     
     // Generar dinámicamente los inputs
     let inputsHtml = '';
@@ -638,8 +643,7 @@ function createFormGroup(item, location) {
                     <div class="input-group input-group-sm">
                         <span class="input-group-text">${item[uomKey]}</span>
                         <input type="number" class="form-control quantity-input" 
-                               data-category="${item.StorageLocation}"
-                               data-item="${item.Item}" 
+                               data-unique-key="${uniqueKey}"
                                data-uom="${item[uomKey]}" 
                                value="${item[qtyKey] || 0}" 
                                oninput="saveSingleItem(this, '${location}')">
@@ -659,13 +663,11 @@ function createFormGroup(item, location) {
 }
 
 function saveSingleItem(inputElement, location) {
-    const category = inputElement.getAttribute('data-category');
-    const item = inputElement.getAttribute('data-item');
+    const uniqueKey = inputElement.getAttribute('data-unique-key');
     const uom = inputElement.getAttribute('data-uom');
     const quantity = parseFloat(inputElement.value) || 0;
 
-    // Usar una clave única que combine la categoría y el ítem
-    const uniqueKey = `${category}__${item}`;
+    const [category, item] = uniqueKey.split('__');
     
     const savedData = JSON.parse(localStorage.getItem(`inventory-${location}`)) || {};
     if (!savedData[uniqueKey]) {
@@ -693,12 +695,29 @@ function filterAndDisplayForm(location) {
     
     // Obtener datos guardados de la ubicación actual
     const savedData = JSON.parse(localStorage.getItem(`inventory-${location}`)) || {};
+    // Obtener el orden guardado para la categoría seleccionada
+    const savedOrder = JSON.parse(localStorage.getItem(`inventory-order-${location}`)) || {};
+    const categoryOrder = savedOrder[selectedCategory] || [];
 
-    const filteredItems = window.inventoryItems.filter(item => {
-        const matchesCategory = selectedCategory ? item.StorageLocation === selectedCategory : false;
-        const matchesSearch = searchTerm ? item.Item.toLowerCase().includes(searchTerm) : true;
-        return matchesCategory && matchesSearch;
-    });
+    // Filtrar los items por categoría y búsqueda
+    const allCategoryItems = window.inventoryItems.filter(item => item.StorageLocation === selectedCategory);
+    
+    // Crear un mapa de ítems por su clave única para un acceso rápido
+    const itemsMap = new Map(allCategoryItems.map(item => [`${item.StorageLocation}__${item.Item}`, item]));
+
+    let filteredItems;
+
+    if (categoryOrder.length > 0) {
+        // Usar el orden guardado para renderizar, filtrando por búsqueda
+        filteredItems = categoryOrder.map(uniqueKey => itemsMap.get(uniqueKey)).filter(item => {
+            return item && (searchTerm ? item.Item.toLowerCase().includes(searchTerm) : true);
+        });
+    } else {
+        // Si no hay orden guardado, usar el orden por defecto del CSV
+        filteredItems = allCategoryItems.filter(item => {
+            return searchTerm ? item.Item.toLowerCase().includes(searchTerm) : true;
+        });
+    }
 
     if (filteredItems.length === 0 && selectedCategory) {
         formContainer.innerHTML = `<div class="alert alert-info text-center" role="alert">No se encontraron productos en esta categoría.</div>`;
@@ -720,6 +739,25 @@ function filterAndDisplayForm(location) {
             });
         }
         formContainer.appendChild(formGroup);
+    });
+}
+
+function initializeSortable(location) {
+    const listElement = document.getElementById(`form-${location}`);
+    if (!listElement) return;
+
+    new Sortable(listElement, {
+        animation: 150,
+        ghostClass: 'sortable-ghost',
+        onEnd: function (evt) {
+            // Se ejecuta al soltar un elemento
+            const selectedCategory = document.getElementById(`category-select-${location}`).value;
+            const newOrder = Array.from(listElement.children).map(item => item.dataset.uniqueKey);
+            
+            const savedOrder = JSON.parse(localStorage.getItem(`inventory-order-${location}`)) || {};
+            savedOrder[selectedCategory] = newOrder;
+            localStorage.setItem(`inventory-order-${location}`, JSON.stringify(savedOrder));
+        }
     });
 }
 
@@ -841,7 +879,6 @@ function exportTotalizedCSV() {
         return;
     }
 
-    // Encabezados del CSV solicitados
     let csvContent = "data:text/csv;charset=utf-8,StorageLocation,Item,UofM,Qty,UofM2,Qty2,UofM3,Qty3\n";
     
     const sortedItems = Object.values(totalInventory).sort((a, b) => {
@@ -864,7 +901,6 @@ function exportTotalizedCSV() {
             `"${data.uofms.Qty3 || ''}"`
         ];
         
-        // La fila ahora usa los nombres de encabezado correctos del objeto
         let row = `"${data.category}","${data.item}",${uofms[0]},${quantities[0]},${uofms[1]},${quantities[1]},${uofms[2]},${quantities[2]}\n`;
         
         csvContent += row;
@@ -880,7 +916,8 @@ function exportTotalizedCSV() {
 }
 
 function clearLocalStorage() {
-    if (confirm("¿Estás seguro de que quieres borrar todos los datos del inventario guardados?")) {
+    if (confirm("¿Estás seguro de que quieres borrar todos los datos del inventario guardados? La organización de los ítems permanecerá intacta.")) {
+        // Borramos solo los datos del inventario
         localStorage.removeItem('inventory-location1');
         localStorage.removeItem('inventory-location2');
         localStorage.removeItem('total-inventory');
