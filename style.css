@@ -38,7 +38,8 @@ body {
     border: 1px solid #e9ecef;
     border-radius: 1rem;
     margin-bottom: 0.5rem;
-    padding: 1rem 1.5rem;
+    /* Reducimos el padding del contenedor del item */
+    padding: 0.8rem 1.5rem;
     transition: all 0.3s ease;
 }
 
@@ -50,21 +51,24 @@ body {
 .list-group-item label {
     font-weight: 600;
     color: #343a40;
-    font-size: 1.3rem; /* ¡Más grande! */
+    /* Reducimos el tamaño de la fuente */
+    font-size: 1.1rem; 
+    /* Reducimos el margen inferior */
+    margin-bottom: 0.5rem;
 }
 
 .input-group-text {
     background-color: #e9ecef;
     border: 1px solid #ced4da;
     border-right: none;
-    font-size: 1.25rem; /* ¡Más grande! */
+    font-size: 1.25rem;
     color: #6c757d;
-    padding: 0.75rem 1rem; /* ¡Más relleno! */
+    padding: 0.75rem 1rem;
 }
 
 .form-control {
-    font-size: 1.25rem; /* ¡Más grande! */
-    padding: 0.75rem 1rem; /* ¡Más relleno! */
+    font-size: 1.25rem;
+    padding: 0.75rem 1rem;
 }
 
 /* Clases de Sortable.js para la experiencia visual */
