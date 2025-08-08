@@ -50,19 +50,21 @@ body {
 .list-group-item label {
     font-weight: 600;
     color: #343a40;
-    font-size: 1rem;
+    font-size: 1.3rem; /* ¡Más grande! */
 }
 
 .input-group-text {
     background-color: #e9ecef;
     border: 1px solid #ced4da;
     border-right: none;
-    font-size: 0.9rem;
+    font-size: 1.25rem; /* ¡Más grande! */
     color: #6c757d;
+    padding: 0.75rem 1rem; /* ¡Más relleno! */
 }
 
 .form-control {
-    font-size: 0.9rem;
+    font-size: 1.25rem; /* ¡Más grande! */
+    padding: 0.75rem 1rem; /* ¡Más relleno! */
 }
 
 /* Clases de Sortable.js para la experiencia visual */
