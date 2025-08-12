@@ -52,7 +52,7 @@ body {
 @media (max-width: 768px) {
     .list-group-item {
         /* Aumentamos el margen inferior para que haya más espacio entre items */
-        margin-bottom: 2rem;
+        margin-bottom: 4rem;
         /* Reducimos el padding para ganar más espacio interno */
         padding: 0.5rem 1rem;
     }
