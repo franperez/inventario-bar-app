@@ -578,6 +578,7 @@ SPARK WINE Taco Shop,CHAMP/SPARK Moet Imperial Brut,Bottle (750 ML),0,Bottle (18
 `;
 
 
+
 document.addEventListener('DOMContentLoaded', () => {
     // Procesa el CSV y lo guarda en una variable global
     window.inventoryItems = processCSV(CSV_DATA);
@@ -913,6 +914,51 @@ function exportTotalizedCSV() {
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
+}
+
+// NUEVAS FUNCIONES DE EXPORTAR E IMPORTAR ORDEN
+function exportOrder() {
+    const orderData = {
+        location1: JSON.parse(localStorage.getItem('inventory-order-location1')) || {},
+        location2: JSON.parse(localStorage.getItem('inventory-order-location2')) || {},
+    };
+
+    const jsonString = JSON.stringify(orderData, null, 2);
+    const blob = new Blob([jsonString], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'inventario-orden.json';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+}
+
+function importOrder(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = function(e) {
+        try {
+            const importedData = JSON.parse(e.target.result);
+            if (importedData.location1 && importedData.location2) {
+                // Sobrescribe los datos de orden existentes
+                localStorage.setItem('inventory-order-location1', JSON.stringify(importedData.location1));
+                localStorage.setItem('inventory-order-location2', JSON.stringify(importedData.location2));
+                alert('El orden de los ítems ha sido importado con éxito. Se recargará la página.');
+                location.reload();
+            } else {
+                alert('El archivo no tiene el formato de orden de inventario correcto.');
+            }
+        } catch (error) {
+            alert('Error al leer el archivo. Asegúrate de que sea un archivo JSON válido.');
+            console.error('Error importing order:', error);
+        }
+    };
+    reader.readAsText(file);
 }
 
 function clearLocalStorage() {
