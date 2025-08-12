@@ -48,6 +48,16 @@ body {
     box-shadow: 0 4px 8px rgba(0,0,0,0.05);
 }
 
+/* AÑADE AQUÍ EL CÓDIGO PARA PANTALLAS MÓVILES */
+@media (max-width: 768px) {
+    .list-group-item {
+        /* Aumentamos el margen inferior para que haya más espacio entre items */
+        margin-bottom: 2rem;
+        /* Reducimos el padding para ganar más espacio interno */
+        padding: 0.5rem 1rem;
+    }
+}
+
 .list-group-item label {
     font-weight: 600;
     color: #343a40;
