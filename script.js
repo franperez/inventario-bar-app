@@ -577,7 +577,10 @@ SPARK WINE Taco Shop,CHAMP/SPARK Moet Ice Imperial,Bottle (750 ML),0,,0,,0
 SPARK WINE Taco Shop,CHAMP/SPARK Moet Imperial Brut,Bottle (750 ML),0,Bottle (187 mL),0,,0
 `;
 
+ // Tu CSV completo aquí
 
+// Variable global para almacenar las instancias de Sortable
+let sortableInstances = {};
 
 document.addEventListener('DOMContentLoaded', () => {
     // Procesa el CSV y lo guarda en una variable global
@@ -593,12 +596,40 @@ document.addEventListener('DOMContentLoaded', () => {
     // Inicializa la primera pestaña
     document.getElementById('category-select-location1').value = categories[0];
     filterAndDisplayForm('location1');
+    filterAndDisplayForm('location2'); // También inicializamos la otra para que el orden se cargue
 
-    // Inicializa Sortable.js en los contenedores de formulario
+    // --- NUEVA LÓGICA PARA EL MENÚ Y EL INTERRUPTOR ---
+    
+    // 1. Lógica para el botón del menú de hamburguesa
+    const menuToggle = document.getElementById('menu-toggle');
+    const mainMenu = new bootstrap.Offcanvas(document.getElementById('main-menu'));
+    menuToggle.addEventListener('click', () => {
+        mainMenu.toggle();
+    });
+
+    // 2. Lógica para el interruptor de arrastrar y soltar
+    const dragDropSwitch = document.getElementById('drag-drop-switch');
+    dragDropSwitch.addEventListener('change', (e) => {
+        const enabled = e.target.checked;
+        // Habilitar o deshabilitar todas las instancias de Sortable
+        for (const key in sortableInstances) {
+            sortableInstances[key].option('disabled', !enabled);
+        }
+        // Añadir o quitar una clase para cambiar el cursor
+        document.querySelectorAll('.sortable-list').forEach(list => {
+            list.classList.toggle('disabled', !enabled);
+        });
+    });
+
+    // 3. Inicializa Sortable.js en los contenedores de formulario
     initializeSortable('location1');
     initializeSortable('location2');
+    
+    // Asegurarse de que el estado inicial del interruptor se aplique
+    dragDropSwitch.dispatchEvent(new Event('change'));
 });
 
+// La función processCSV sigue igual...
 function processCSV(csvString) {
     const rows = csvString.trim().split('\n');
     const headers = rows[0].split(',').map(header => header.trim());
@@ -611,6 +642,8 @@ function processCSV(csvString) {
     });
 }
 
+
+// La función populateCategorySelect sigue igual...
 function populateCategorySelect(selectElement, categories) {
     if (!selectElement) return;
     selectElement.innerHTML = '';
@@ -627,13 +660,14 @@ function populateCategorySelect(selectElement, categories) {
     });
 }
 
+
+// La función createFormGroup sigue igual...
 function createFormGroup(item, location) {
     const uniqueKey = `${item.StorageLocation}__${item.Item}`;
     const formGroup = document.createElement('div');
     formGroup.className = 'list-group-item';
-    formGroup.dataset.uniqueKey = uniqueKey; // Añadimos la clave única para poder guardar el orden
+    formGroup.dataset.uniqueKey = uniqueKey;
     
-    // Generar dinámicamente los inputs
     let inputsHtml = '';
     for (let i = 1; i <= 3; i++) {
         const uomKey = `UofM${i > 1 ? i : ''}`;
@@ -663,6 +697,8 @@ function createFormGroup(item, location) {
     return formGroup;
 }
 
+
+// La función saveSingleItem sigue igual...
 function saveSingleItem(inputElement, location) {
     const uniqueKey = inputElement.getAttribute('data-unique-key');
     const uom = inputElement.getAttribute('data-uom');
@@ -682,6 +718,7 @@ function saveSingleItem(inputElement, location) {
     localStorage.setItem(`inventory-${location}`, JSON.stringify(savedData));
 }
 
+// La función filterAndDisplayForm sigue igual...
 function filterAndDisplayForm(location) {
     const categorySelect = document.getElementById(`category-select-${location}`);
     const searchInput = document.getElementById(`search-input-${location}`);
@@ -694,27 +731,21 @@ function filterAndDisplayForm(location) {
 
     formContainer.innerHTML = '';
     
-    // Obtener datos guardados de la ubicación actual
     const savedData = JSON.parse(localStorage.getItem(`inventory-${location}`)) || {};
-    // Obtener el orden guardado para la categoría seleccionada
     const savedOrder = JSON.parse(localStorage.getItem(`inventory-order-${location}`)) || {};
     const categoryOrder = savedOrder[selectedCategory] || [];
 
-    // Filtrar los items por categoría y búsqueda
     const allCategoryItems = window.inventoryItems.filter(item => item.StorageLocation === selectedCategory);
     
-    // Crear un mapa de ítems por su clave única para un acceso rápido
     const itemsMap = new Map(allCategoryItems.map(item => [`${item.StorageLocation}__${item.Item}`, item]));
 
     let filteredItems;
 
     if (categoryOrder.length > 0) {
-        // Usar el orden guardado para renderizar, filtrando por búsqueda
         filteredItems = categoryOrder.map(uniqueKey => itemsMap.get(uniqueKey)).filter(item => {
             return item && (searchTerm ? item.Item.toLowerCase().includes(searchTerm) : true);
         });
     } else {
-        // Si no hay orden guardado, usar el orden por defecto del CSV
         filteredItems = allCategoryItems.filter(item => {
             return searchTerm ? item.Item.toLowerCase().includes(searchTerm) : true;
         });
@@ -729,7 +760,6 @@ function filterAndDisplayForm(location) {
         const uniqueKey = `${item.StorageLocation}__${item.Item}`;
         const formGroup = createFormGroup(item, location);
         
-        // Cargar datos guardados si existen
         if (savedData[uniqueKey] && savedData[uniqueKey].quantities) {
             const inputs = formGroup.querySelectorAll('.quantity-input');
             inputs.forEach(input => {
@@ -743,15 +773,18 @@ function filterAndDisplayForm(location) {
     });
 }
 
+
+// MODIFICADA: Función para inicializar Sortable.js
 function initializeSortable(location) {
     const listElement = document.getElementById(`form-${location}`);
     if (!listElement) return;
 
-    new Sortable(listElement, {
+    // Guardamos la instancia de Sortable para poder habilitarla/deshabilitarla después
+    sortableInstances[location] = new Sortable(listElement, {
         animation: 150,
         ghostClass: 'sortable-ghost',
+        disabled: true, // Inicia deshabilitado por defecto
         onEnd: function (evt) {
-            // Se ejecuta al soltar un elemento
             const selectedCategory = document.getElementById(`category-select-${location}`).value;
             const newOrder = Array.from(listElement.children).map(item => item.dataset.uniqueKey);
             
@@ -762,6 +795,8 @@ function initializeSortable(location) {
     });
 }
 
+// Las funciones totalizeInventory, filterAndDisplayTotalTable, exportTotalizedCSV, exportOrder, importOrder y clearLocalStorage siguen igual.
+// ... (Omitidas por brevedad, no necesitan cambios) ...
 function totalizeInventory() {
     const inventory1 = JSON.parse(localStorage.getItem('inventory-location1')) || {};
     const inventory2 = JSON.parse(localStorage.getItem('inventory-location2')) || {};
@@ -793,7 +828,6 @@ function totalizeInventory() {
             }
         });
 
-        // Solo agregar al total si hay al menos una cantidad mayor a 0
         if (Object.values(totalQuantities).some(qty => qty > 0)) {
              totalInventory[uniqueKey] = {
                 category: itemInfo.StorageLocation,
@@ -916,7 +950,6 @@ function exportTotalizedCSV() {
     document.body.removeChild(link);
 }
 
-// NUEVAS FUNCIONES DE EXPORTAR E IMPORTAR ORDEN
 function exportOrder() {
     const orderData = {
         location1: JSON.parse(localStorage.getItem('inventory-order-location1')) || {},
@@ -945,7 +978,6 @@ function importOrder(event) {
         try {
             const importedData = JSON.parse(e.target.result);
             if (importedData.location1 && importedData.location2) {
-                // Sobrescribe los datos de orden existentes
                 localStorage.setItem('inventory-order-location1', JSON.stringify(importedData.location1));
                 localStorage.setItem('inventory-order-location2', JSON.stringify(importedData.location2));
                 alert('El orden de los ítems ha sido importado con éxito. Se recargará la página.');
@@ -963,7 +995,6 @@ function importOrder(event) {
 
 function clearLocalStorage() {
     if (confirm("¿Estás seguro de que quieres borrar todos los datos del inventario guardados? La organización de los ítems permanecerá intacta.")) {
-        // Borramos solo los datos del inventario
         localStorage.removeItem('inventory-location1');
         localStorage.removeItem('inventory-location2');
         localStorage.removeItem('total-inventory');

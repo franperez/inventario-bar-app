@@ -1,4 +1,10 @@
 /* Estilos generales */
+html, body {
+    /* Solución para el problema del teclado en móviles: Evita que el viewport cambie bruscamente. */
+    height: 100%;
+    overflow-x: hidden;
+}
+
 body {
     background-color: #f0f2f5;
     font-family: 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
@@ -8,37 +14,51 @@ body {
     max-width: 1200px;
 }
 
-/* Card principal y Tabs */
+/* Card principal */
 .card {
     border-radius: 1.5rem !important;
 }
 
-.nav-pills .nav-link {
-    color: #495057;
-    font-weight: 600;
-    font-size: 1.1rem;
-    padding: 0.75rem 1.5rem;
-    border-radius: 50px;
-    transition: all 0.3s ease;
+/* --- NUEVOS ESTILOS PARA EL MENÚ DE HAMBURGUESA --- */
+#menu-toggle {
+    position: fixed;
+    top: 15px;
+    left: 15px;
+    z-index: 1050; /* Debe estar por encima del offcanvas */
+    border-radius: 50%;
+    width: 60px;
+    height: 60px;
+    font-size: 1.5rem;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.15);
 }
 
-.nav-pills .nav-link.active,
-.nav-pills .nav-link:hover {
-    background-color: #0d6efd;
-    color: white;
+.offcanvas-start {
+    width: 280px;
 }
+
+.offcanvas-body .list-group-item {
+    font-size: 1.1rem;
+    font-weight: 500;
+}
+/* --- FIN DE NUEVOS ESTILOS --- */
+
 
 /* Formulario de Items */
 .sortable-list .list-group-item {
     cursor: grab; /* Indica que el elemento es arrastrable */
 }
 
+/* Estilo para cuando el drag-and-drop está deshabilitado */
+.sortable-list.disabled .list-group-item {
+    cursor: default;
+}
+
+
 .list-group-item {
     background-color: #ffffff;
     border: 1px solid #e9ecef;
     border-radius: 1rem;
     margin-bottom: 2rem;
-    /* Reducimos el padding del contenedor del item */
     padding: 0.8rem 1rem;
     transition: all 0.3s ease;
 }
@@ -48,36 +68,33 @@ body {
     box-shadow: 0 4px 8px rgba(0,0,0,0.05);
 }
 
-/* AÑADE AQUÍ EL CÓDIGO PARA PANTALLAS MÓVILES */
+/* Ajustes para pantallas móviles */
 @media (max-width: 768px) {
     .list-group-item {
-        /* Aumentamos el margen inferior para que haya más espacio entre items */
         margin-bottom: 4rem;
-        /* Reducimos el padding para ganar más espacio interno */
         padding: 0.5rem 1rem;
+    }
+    .display-6 {
+        font-size: 1.8rem; /* Título más pequeño en móviles */
     }
 }
 
 .list-group-item label {
     font-weight: 600;
     color: #343a40;
-    /* Reducimos el tamaño de la fuente */
     font-size: 1.1rem; 
-    /* Reducimos el margen inferior */
     margin-bottom: 0.5rem;
 }
 
-/* El contenedor de los inputs ahora es un Flexbox */
 .list-group-item .row {
     display: flex;
-    flex-wrap: wrap; /* Permite que los inputs se envuelvan a la siguiente línea */
-    gap: 0.5rem; /* Espacio entre los inputs */
+    flex-wrap: wrap;
+    gap: 0.5rem;
 }
 
-/* Los inputs dentro de .row se comportarán de forma más flexible */
 .list-group-item .row .col {
-    flex: 1 1 120px; /* Tamaño base de 120px, pueden crecer o encogerse */
-    min-width: 120px; /* Asegura un tamaño mínimo */
+    flex: 1 1 120px;
+    min-width: 120px;
 }
 
 .input-group-text {
@@ -94,7 +111,7 @@ body {
     padding: 0.75rem 1rem;
 }
 
-/* Clases de Sortable.js para la experiencia visual */
+/* Clases de Sortable.js */
 .sortable-ghost {
     opacity: 0.4;
     background-color: #f8f9fa;
@@ -137,8 +154,4 @@ body {
 .form-label {
     font-weight: 600;
     color: #495057;
-}
-
-.display-6 {
-    font-size: 2.5rem;
 }
