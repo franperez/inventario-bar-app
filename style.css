@@ -1,9 +1,8 @@
 /* Estilos generales */
 html, body {
+    /* Solución para el problema del teclado en móviles: Evita que el viewport cambie bruscamente. */
     height: 100%;
     overflow-x: hidden;
-    /* Evita el zoom al tocar un input en iOS */
-    -webkit-text-size-adjust: 100%;
 }
 
 body {
@@ -15,24 +14,22 @@ body {
     max-width: 1200px;
 }
 
+/* Card principal */
 .card {
     border-radius: 1.5rem !important;
 }
 
-/* --- ESTILOS PARA EL MENÚ DE HAMBURGUESA --- */
+/* --- NUEVOS ESTILOS PARA EL MENÚ DE HAMBURGUESA --- */
 #menu-toggle {
     position: fixed;
     top: 15px;
     left: 15px;
-    z-index: 1050;
+    z-index: 1050; /* Debe estar por encima del offcanvas */
     border-radius: 50%;
     width: 60px;
     height: 60px;
     font-size: 1.5rem;
     box-shadow: 0 4px 12px rgba(0,0,0,0.15);
-    display: flex;
-    align-items: center;
-    justify-content: center;
 }
 
 .offcanvas-start {
@@ -43,16 +40,19 @@ body {
     font-size: 1.1rem;
     font-weight: 500;
 }
-/* --- FIN DE ESTILOS DE MENÚ --- */
+/* --- FIN DE NUEVOS ESTILOS --- */
+
 
 /* Formulario de Items */
 .sortable-list .list-group-item {
-    cursor: grab;
+    cursor: grab; /* Indica que el elemento es arrastrable */
 }
 
+/* Estilo para cuando el drag-and-drop está deshabilitado */
 .sortable-list.disabled .list-group-item {
     cursor: default;
 }
+
 
 .list-group-item {
     background-color: #ffffff;
@@ -66,6 +66,17 @@ body {
 .list-group-item:hover {
     transform: translateY(-2px);
     box-shadow: 0 4px 8px rgba(0,0,0,0.05);
+}
+
+/* Ajustes para pantallas móviles */
+@media (max-width: 768px) {
+    .list-group-item {
+        margin-bottom: 4rem;
+        padding: 0.5rem 1rem;
+    }
+    .display-6 {
+        font-size: 1.8rem; /* Título más pequeño en móviles */
+    }
 }
 
 .list-group-item label {
@@ -100,12 +111,14 @@ body {
     padding: 0.75rem 1rem;
 }
 
+/* Clases de Sortable.js */
 .sortable-ghost {
     opacity: 0.4;
     background-color: #f8f9fa;
     border: 2px dashed #0d6efd;
 }
 
+/* Tabla de Totalización */
 #totalization-results {
     background-color: #fff;
     border-radius: 1rem;
@@ -129,6 +142,7 @@ body {
     cursor: pointer;
 }
 
+/* Botones */
 .btn-lg {
     font-size: 1rem;
     padding: 0.75rem 1.5rem;
@@ -136,84 +150,8 @@ body {
     font-weight: 600;
 }
 
+/* Helper class */
 .form-label {
     font-weight: 600;
     color: #495057;
-}
-
-
-/*
-================================================================
---- BLOQUE DE MEDIA QUERIES PARA UNA EXPERIENCIA MÓVIL PERFECTA ---
-================================================================
-*/
-@media (max-width: 768px) {
-    /* -- Contenedor Principal -- */
-    .container.my-5 {
-        margin-top: 2rem !important; /* Reduce el margen superior */
-        margin-bottom: 3rem !important; /* Reduce el margen inferior */
-    }
-
-    /* -- Botón de Menú -- */
-    #menu-toggle {
-        width: 65px;
-        height: 65px;
-        font-size: 1.8rem;
-        top: 20px;
-        left: 20px;
-    }
-
-    /* -- Tipografía -- */
-    .display-6 {
-        font-size: 1.8rem; /* Título principal más compacto */
-    }
-    
-    .form-label {
-        font-size: 0.9rem; /* Etiquetas de formulario más pequeñas */
-    }
-    
-    .form-select-lg, .input-group-lg .form-control {
-        font-size: 1rem; /* Texto de inputs más pequeño */
-    }
-
-    /* -- Tarjetas de Ítems de Inventario -- */
-    .list-group-item {
-        margin-bottom: 2.5rem; /* Espacio más equilibrado entre ítems */
-        padding: 0.75rem;
-    }
-
-    .list-group-item label {
-        font-size: 1rem; /* Nombre del producto ligeramente más pequeño */
-    }
-    
-    /* Inputs de cantidad más compactos */
-    .list-group-item .input-group-text {
-        font-size: 0.9rem;
-        padding: 0.5rem 0.75rem;
-    }
-    .list-group-item .form-control {
-        font-size: 1rem;
-        padding: 0.5rem 0.75rem;
-    }
-    
-    /* -- Pestaña de Totalización -- */
-    #pills-total .d-flex.flex-wrap.gap-2 {
-        width: 100%; /* Ocupa todo el ancho */
-        flex-direction: column; /* Apila los botones verticalmente */
-    }
-
-    #pills-total .btn {
-        width: 100%; /* Botones a lo ancho completo */
-        margin-bottom: 0.5rem;
-    }
-    
-    /* Tabla de totalización más legible */
-    #totalization-results .table {
-        font-size: 0.8rem; /* Reduce la fuente para que quepan más columnas */
-    }
-
-    #totalization-results .table th,
-    #totalization-results .table td {
-        padding: 0.5rem 0.25rem; /* Reduce el padding para compactar la tabla */
-    }
 }

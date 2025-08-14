@@ -581,18 +581,34 @@ SPARK WINE Taco Shop,CHAMP/SPARK Moet Imperial Brut,Bottle (750 ML),0,Bottle (18
 let sortableInstances = {};
 
 document.addEventListener('DOMContentLoaded', () => {
+    
+    // =================================================================
+    // --- NUEVO CÓDIGO PARA CERRAR EL MENÚ AUTOMÁTICAMENTE ---
+    // =================================================================
+    const mainMenuElement = document.getElementById('main-menu');
+    const mainMenu = new bootstrap.Offcanvas(mainMenuElement);
+    const menuLinks = document.querySelectorAll('#main-menu .list-group-item');
+
+    // Se añade un detector de clics a cada enlace del menú
+    menuLinks.forEach(link => {
+        link.addEventListener('click', () => {
+            // Cuando se hace clic en un enlace, se oculta el menú
+            mainMenu.hide();
+        });
+    });
+    // =================================================================
+
     window.inventoryItems = processCSV(CSV_DATA);
     const categories = [...new Set(window.inventoryItems.map(item => item.StorageLocation))];
 
     populateCategorySelect(document.getElementById('category-select-location1'), categories);
     populateCategorySelect(document.getElementById('category-select-location2'), categories);
 
-    document.getElementById('category-select-location1').value = categories[0];
+    if (categories.length > 0) {
+        document.getElementById('category-select-location1').value = categories[0];
+    }
     filterAndDisplayForm('location1');
     filterAndDisplayForm('location2');
-
-    // --- LÓGICA DE MENÚ MANUAL ELIMINADA ---
-    // El botón ahora funciona con los atributos de Bootstrap, no se necesita JS extra.
 
     // Lógica para el interruptor de arrastrar y soltar
     const dragDropSwitch = document.getElementById('drag-drop-switch');
@@ -609,7 +625,378 @@ document.addEventListener('DOMContentLoaded', () => {
     initializeSortable('location1');
     initializeSortable('location2');
     
-    dragDropSwitch.dispatchEvent(new Event('change'));
+    // Asegura que el estado inicial del interruptor se aplique
+    if(dragDropSwitch) {
+      dragDropSwitch.dispatchEvent(new Event('change'));
+    }
 });
 
-// ... El resto del archivo script.js permanece sin cambios ...
+
+// ... El resto del archivo script.js permanece exactamente igual ...
+
+// La función processCSV sigue igual...
+function processCSV(csvString) {
+    const rows = csvString.trim().split('\n');
+    const headers = rows[0].split(',').map(header => header.trim());
+    return rows.slice(1).map(row => {
+        const values = row.split(',');
+        return headers.reduce((object, header, index) => {
+            object[header] = values[index] ? values[index].trim() : '';
+            return object;
+        }, {});
+    });
+}
+
+// La función populateCategorySelect sigue igual...
+function populateCategorySelect(selectElement, categories) {
+    if (!selectElement) return;
+    selectElement.innerHTML = '';
+    const defaultOption = document.createElement('option');
+    defaultOption.value = '';
+    defaultOption.textContent = 'Selecciona una categoría...';
+    selectElement.appendChild(defaultOption);
+    
+    categories.forEach(category => {
+        const option = document.createElement('option');
+        option.value = category;
+        option.textContent = category;
+        selectElement.appendChild(option);
+    });
+}
+
+// La función createFormGroup sigue igual...
+function createFormGroup(item, location) {
+    const uniqueKey = `${item.StorageLocation}__${item.Item}`;
+    const formGroup = document.createElement('div');
+    formGroup.className = 'list-group-item';
+    formGroup.dataset.uniqueKey = uniqueKey;
+    
+    let inputsHtml = '';
+    for (let i = 1; i <= 3; i++) {
+        const uomKey = `UofM${i > 1 ? i : ''}`;
+        const qtyKey = `Qty${i > 1 ? i : ''}`;
+        if (item[uomKey]) {
+            inputsHtml += `
+                <div class="col">
+                    <div class="input-group input-group-sm">
+                        <span class="input-group-text">${item[uomKey]}</span>
+                        <input type="number" class="form-control quantity-input" 
+                               data-unique-key="${uniqueKey}"
+                               data-uom="${item[uomKey]}" 
+                               value="${item[qtyKey] || 0}" 
+                               oninput="saveSingleItem(this, '${location}')">
+                    </div>
+                </div>
+            `;
+        }
+    }
+    
+    formGroup.innerHTML = `
+        <label class="form-label mb-2">${item.Item}</label>
+        <div class="row g-2">
+            ${inputsHtml}
+        </div>
+    `;
+    return formGroup;
+}
+
+// La función saveSingleItem sigue igual...
+function saveSingleItem(inputElement, location) {
+    const uniqueKey = inputElement.getAttribute('data-unique-key');
+    const uom = inputElement.getAttribute('data-uom');
+    const quantity = parseFloat(inputElement.value) || 0;
+
+    const [category, item] = uniqueKey.split('__');
+    
+    const savedData = JSON.parse(localStorage.getItem(`inventory-${location}`)) || {};
+    if (!savedData[uniqueKey]) {
+        savedData[uniqueKey] = {
+            category: category,
+            item: item,
+            quantities: {}
+        };
+    }
+    savedData[uniqueKey].quantities[uom] = quantity;
+    localStorage.setItem(`inventory-${location}`, JSON.stringify(savedData));
+}
+
+// La función filterAndDisplayForm sigue igual...
+function filterAndDisplayForm(location) {
+    const categorySelect = document.getElementById(`category-select-${location}`);
+    const searchInput = document.getElementById(`search-input-${location}`);
+    const formContainer = document.getElementById(`form-${location}`);
+
+    if (!formContainer || !categorySelect || !searchInput) return;
+
+    const selectedCategory = categorySelect.value;
+    const searchTerm = searchInput.value.toLowerCase();
+
+    formContainer.innerHTML = '';
+    
+    const savedData = JSON.parse(localStorage.getItem(`inventory-${location}`)) || {};
+    const savedOrder = JSON.parse(localStorage.getItem(`inventory-order-${location}`)) || {};
+    const categoryOrder = savedOrder[selectedCategory] || [];
+
+    const allCategoryItems = window.inventoryItems.filter(item => item.StorageLocation === selectedCategory);
+    
+    const itemsMap = new Map(allCategoryItems.map(item => [`${item.StorageLocation}__${item.Item}`, item]));
+
+    let filteredItems;
+
+    if (categoryOrder.length > 0) {
+        filteredItems = categoryOrder.map(uniqueKey => itemsMap.get(uniqueKey)).filter(item => {
+            return item && (searchTerm ? item.Item.toLowerCase().includes(searchTerm) : true);
+        });
+    } else {
+        filteredItems = allCategoryItems.filter(item => {
+            return searchTerm ? item.Item.toLowerCase().includes(searchTerm) : true;
+        });
+    }
+
+    if (filteredItems.length === 0 && selectedCategory) {
+        formContainer.innerHTML = `<div class="alert alert-info text-center" role="alert">No se encontraron productos en esta categoría.</div>`;
+        return;
+    }
+
+    filteredItems.forEach(item => {
+        const uniqueKey = `${item.StorageLocation}__${item.Item}`;
+        const formGroup = createFormGroup(item, location);
+        
+        if (savedData[uniqueKey] && savedData[uniqueKey].quantities) {
+            const inputs = formGroup.querySelectorAll('.quantity-input');
+            inputs.forEach(input => {
+                const uom = input.getAttribute('data-uom');
+                if (savedData[uniqueKey].quantities[uom] || savedData[uniqueKey].quantities[uom] === 0) {
+                    input.value = savedData[uniqueKey].quantities[uom];
+                }
+            });
+        }
+        formContainer.appendChild(formGroup);
+    });
+}
+
+// La función initializeSortable sigue igual...
+function initializeSortable(location) {
+    const listElement = document.getElementById(`form-${location}`);
+    if (!listElement) return;
+
+    sortableInstances[location] = new Sortable(listElement, {
+        animation: 150,
+        ghostClass: 'sortable-ghost',
+        disabled: true, 
+        onEnd: function (evt) {
+            const selectedCategory = document.getElementById(`category-select-${location}`).value;
+            const newOrder = Array.from(listElement.children).map(item => item.dataset.uniqueKey);
+            
+            const savedOrder = JSON.parse(localStorage.getItem(`inventory-order-${location}`)) || {};
+            savedOrder[selectedCategory] = newOrder;
+            localStorage.setItem(`inventory-order-${location}`, JSON.stringify(savedOrder));
+        }
+    });
+}
+
+// Las funciones de totalización y exportación siguen igual
+function totalizeInventory() {
+    const inventory1 = JSON.parse(localStorage.getItem('inventory-location1')) || {};
+    const inventory2 = JSON.parse(localStorage.getItem('inventory-location2')) || {};
+    
+    const totalInventory = {};
+
+    window.inventoryItems.forEach(itemInfo => {
+        const uniqueKey = `${itemInfo.StorageLocation}__${itemInfo.Item}`;
+        
+        const uofms = [
+            { uom: itemInfo.UofM, key: 'Qty' },
+            { uom: itemInfo.UofM2, key: 'Qty2' },
+            { uom: itemInfo.UofM3, key: 'Qty3' }
+        ];
+
+        const totalQuantities = {};
+        const totalUofMs = {};
+
+        uofms.forEach(({ uom, key }) => {
+            if (uom) {
+                const qty1 = inventory1[uniqueKey] && inventory1[uniqueKey].quantities[uom] ? parseFloat(inventory1[uniqueKey].quantities[uom]) : 0;
+                const qty2 = inventory2[uniqueKey] && inventory2[uniqueKey].quantities[uom] ? parseFloat(inventory2[uniqueKey].quantities[uom]) : 0;
+                
+                totalQuantities[key] = qty1 + qty2;
+                totalUofMs[key] = uom;
+            } else {
+                totalQuantities[key] = '';
+                totalUofMs[key] = '';
+            }
+        });
+
+        if (Object.values(totalQuantities).some(qty => qty > 0)) {
+             totalInventory[uniqueKey] = {
+                category: itemInfo.StorageLocation,
+                item: itemInfo.Item,
+                uofms: totalUofMs,
+                quantities: totalQuantities,
+            };
+        }
+    });
+
+    localStorage.setItem('total-inventory', JSON.stringify(totalInventory));
+    filterAndDisplayTotalTable();
+}
+
+function filterAndDisplayTotalTable() {
+    const totalTableContainer = document.getElementById('totalization-results');
+    const searchInput = document.getElementById('search-input-totalization');
+    
+    if (!totalTableContainer || !searchInput) return;
+
+    const searchTerm = searchInput.value.toLowerCase();
+    
+    const totalInventory = JSON.parse(localStorage.getItem('total-inventory')) || {};
+    totalTableContainer.innerHTML = '';
+
+    if (Object.keys(totalInventory).length === 0) {
+        totalTableContainer.innerHTML = `<div class="alert alert-warning text-center" role="alert">No hay datos totalizados. Haz clic en "Totalizar Inventario" para ver los resultados.</div>`;
+        return;
+    }
+    
+    const itemsToShow = Object.values(totalInventory).filter(data => {
+        return data.item.toLowerCase().includes(searchTerm) || data.category.toLowerCase().includes(searchTerm);
+    });
+
+    itemsToShow.sort((a, b) => {
+        const categoryA = a.category.toLowerCase();
+        const categoryB = b.category.toLowerCase();
+        if (categoryA < categoryB) return -1;
+        if (categoryA > categoryB) return 1;
+        return a.item.localeCompare(b.item);
+    });
+
+    const table = document.createElement('table');
+    table.className = 'table table-hover table-striped table-sm text-center';
+    table.innerHTML = `
+        <thead>
+            <tr>
+                <th>Categoría</th>
+                <th>Producto</th>
+                <th>UofM</th>
+                <th>Qty</th>
+                <th>UofM2</th>
+                <th>Qty2</th>
+                <th>UofM3</th>
+                <th>Qty3</th>
+            </tr>
+        </thead>
+        <tbody></tbody>
+    `;
+    totalTableContainer.appendChild(table);
+    const tableBody = table.querySelector('tbody');
+
+    itemsToShow.forEach(data => {
+        const row = document.createElement('tr');
+        row.innerHTML = `
+            <td>${data.category || ''}</td>
+            <td>${data.item || ''}</td>
+            <td>${data.uofms.Qty || ''}</td>
+            <td>${data.quantities.Qty !== 0 ? data.quantities.Qty : ''}</td>
+            <td>${data.uofms.Qty2 || ''}</td>
+            <td>${data.quantities.Qty2 !== 0 ? data.quantities.Qty2 : ''}</td>
+            <td>${data.uofms.Qty3 || ''}</td>
+            <td>${data.quantities.Qty3 !== 0 ? data.quantities.Qty3 : ''}</td>
+        `;
+        tableBody.appendChild(row);
+    });
+}
+
+function exportTotalizedCSV() {
+    const totalInventory = JSON.parse(localStorage.getItem('total-inventory')) || {};
+    
+    if (Object.keys(totalInventory).length === 0) {
+        alert("No hay datos para exportar. Por favor, totalice el inventario primero.");
+        return;
+    }
+
+    let csvContent = "data:text/csv;charset=utf-8,StorageLocation,Item,UofM,Qty,UofM2,Qty2,UofM3,Qty3\n";
+    
+    const sortedItems = Object.values(totalInventory).sort((a, b) => {
+        const categoryA = a.category.toLowerCase();
+        const categoryB = b.category.toLowerCase();
+        if (categoryA < categoryB) return -1;
+        if (categoryA > categoryB) return 1;
+        return a.item.localeCompare(b.item);
+    });
+    
+    sortedItems.forEach(data => {
+        const quantities = [
+            data.quantities.Qty || 0,
+            data.quantities.Qty2 || 0,
+            data.quantities.Qty3 || 0
+        ];
+        const uofms = [
+            `"${data.uofms.Qty || ''}"`,
+            `"${data.uofms.Qty2 || ''}"`,
+            `"${data.uofms.Qty3 || ''}"`
+        ];
+        
+        let row = `"${data.category}","${data.item}",${uofms[0]},${quantities[0]},${uofms[1]},${quantities[1]},${uofms[2]},${quantities[2]}\n`;
+        
+        csvContent += row;
+    });
+
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement("a");
+    link.setAttribute("href", encodedUri);
+    link.setAttribute("download", "inventario_totalizado.csv");
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+}
+
+function exportOrder() {
+    const orderData = {
+        location1: JSON.parse(localStorage.getItem('inventory-order-location1')) || {},
+        location2: JSON.parse(localStorage.getItem('inventory-order-location2')) || {},
+    };
+
+    const jsonString = JSON.stringify(orderData, null, 2);
+    const blob = new Blob([jsonString], { type: 'application/json' });
+    const url = URL.createObjectURL(blob);
+
+    const a = document.createElement('a');
+    a.href = url;
+    a.download = 'inventario-orden.json';
+    document.body.appendChild(a);
+    a.click();
+    document.body.removeChild(a);
+    URL.revokeObjectURL(url);
+}
+
+function importOrder(event) {
+    const file = event.target.files[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = function(e) {
+        try {
+            const importedData = JSON.parse(e.target.result);
+            if (importedData.location1 && importedData.location2) {
+                localStorage.setItem('inventory-order-location1', JSON.stringify(importedData.location1));
+                localStorage.setItem('inventory-order-location2', JSON.stringify(importedData.location2));
+                alert('El orden de los ítems ha sido importado con éxito. Se recargará la página.');
+                location.reload();
+            } else {
+                alert('El archivo no tiene el formato de orden de inventario correcto.');
+            }
+        } catch (error) {
+            alert('Error al leer el archivo. Asegúrate de que sea un archivo JSON válido.');
+            console.error('Error importing order:', error);
+        }
+    };
+    reader.readAsText(file);
+}
+
+function clearLocalStorage() {
+    if (confirm("¿Estás seguro de que quieres borrar todos los datos del inventario guardados? La organización de los ítems permanecerá intacta.")) {
+        localStorage.removeItem('inventory-location1');
+        localStorage.removeItem('inventory-location2');
+        localStorage.removeItem('total-inventory');
+        location.reload();
+    }
+}
